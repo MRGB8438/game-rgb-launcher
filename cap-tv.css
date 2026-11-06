@@ -1,0 +1,438 @@
+/* ============================================================
+   Game RGB — Capacitor (TV / Mobile) layer styles
+   Loaded only when window.Capacitor exists (cap-bridge.js adds
+   .cap-tv / .cap-mobile classes to <html>).
+
+   v1.1.5 — the viewport is the REAL device width everywhere.
+   The compact skin below gives phones the PC version's density
+   at their native resolution (user request: «خودش رزولوشن موبایل
+   رو بشناسه و اندازه صفحه موبایلی بشه»).
+   ============================================================ */
+
+/* ---------- TV mode (10-foot UI) ----------
+   v1.1.6: static zoom removed. A single fixed multiplier only fit ONE
+   resolution — on 720p boxes (very common, and TV WebViews report 1
+   density regardless of physical resolution) it made the ≥1400px desktop
+   layout overflow the frame; on other resolutions it left the UI too
+   small. The real zoom is now computed by cap-bridge.js#setTvZoom() from
+   the ACTUAL viewport size on every load/resize, so it always fits.
+   This 1.28 is only a same-frame fallback in case that JS ever fails to
+   run (e.g. before it executes on first paint). */
+html.cap-tv body {
+  zoom: 1.28;
+  background: #07060d;
+}
+
+/* Focus ring: applied by the spatial-navigation engine */
+.cap-focused {
+  outline: 3px solid #ffd93d !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(255, 217, 61, .28), 0 0 22px rgba(255, 157, 61, .35) !important;
+  border-radius: 10px;
+  position: relative;
+  z-index: 5;
+}
+/* cards: mirror their hover state when focused */
+html.cap-tv .game-card.cap-focused {
+  transform: translateY(-6px) scale(1.04);
+  filter: brightness(1.12);
+  transition: transform .12s ease, filter .12s ease;
+}
+/* never show focus ring on text inputs while typing */
+input.cap-focused, textarea.cap-focused {
+  outline-color: #9b7cff !important;
+}
+
+/* ============================================================
+   MOBILE MODE — real responsive fit (v1.1.5)
+   The launcher is desktop-designed for ≥1400 css px. A landscape
+   phone is ~890-1200 css px wide, so the raw desktop layout
+   rendered oversized and the topbar spilled out of the frame.
+   This skin re-fits the whole shell at native resolution:
+     • topbar 48px — compact buttons, brand text hidden, the
+       320px topbar music player hidden (that alone made the
+       topbar overflow: «گزینه‌ها توی کادر نیست»)
+     • sidebar restored + compacted to 176px (never hidden,
+       never the desktop 280px)
+     • game tiles on fixed compact tracks — no more single
+       full-width stretched card
+     • hero / home widgets / modals / floating panels resized
+   Paired with MainActivity setTextZoom(100) + user-scalable=no.
+   ============================================================ */
+html.cap-mobile body {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+html.cap-mobile .game-card:active {
+  transform: scale(.97);
+}
+
+/* ---- shell grid: 48px topbar + 176px sidebar, both guaranteed ---- */
+html.cap-mobile #launcher {
+  grid-template-columns: 176px minmax(0, 1fr) !important;
+  grid-template-rows: 48px minmax(0, 1fr) !important;
+  grid-template-areas: "topbar topbar" "sidebar main" !important;
+  height: 100dvh;
+  width: 100vw;
+}
+html.cap-mobile .sidebar {
+  display: flex !important;   /* app hides it ≤900px — restore it */
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ---- topbar: everything must stay INSIDE the frame ---- */
+html.cap-mobile .topbar {
+  padding: 0 8px;
+  gap: 5px;
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow: hidden;
+}
+html.cap-mobile .topbar > * { flex-shrink: 0; min-width: 0; }
+html.cap-mobile .music-player-topbar { display: none !important; }
+html.cap-mobile .brand { gap: 6px; }
+html.cap-mobile .brand .text { display: none; }
+html.cap-mobile .brand .logo { width: 28px; height: 28px; font-size: 13px; border-radius: 8px; }
+html.cap-mobile .search-wrap {
+  flex: 1 1 70px !important;
+  width: auto !important;
+  min-width: 70px;
+  max-width: 360px;
+  flex-shrink: 1 !important;
+}
+html.cap-mobile .search-wrap input { padding: 6px 32px 6px 11px; font-size: 12.5px; }
+html.cap-mobile .icon-btn { width: 32px; height: 32px; font-size: 14.5px; border-radius: 9px; }
+html.cap-mobile .btn-primary { padding: 6px 12px; font-size: 12px; border-radius: 9px; }
+html.cap-mobile .btn-ghost { padding: 6px 10px; font-size: 11.5px; }
+html.cap-mobile .profile-name { display: none; }
+
+/* ---- sidebar: compact PC-like rail ---- */
+html.cap-mobile .sidebar .nav { padding: 8px; gap: 3px; }
+html.cap-mobile .sidebar .nav-btn { padding: 7px 10px; font-size: 11.5px; gap: 8px; border-radius: 9px; }
+html.cap-mobile .sidebar .filters { padding: 6px 10px 12px; }
+html.cap-mobile .sidebar .filters-title { font-size: 9.5px; padding: 8px 10px 5px; }
+html.cap-mobile .sidebar-profile-card { margin: 8px; padding: 10px; gap: 8px; }
+html.cap-mobile .sidebar-profile-card .spc-avatar { width: 34px; height: 34px; font-size: 13px; }
+html.cap-mobile .sidebar .chip, html.cap-mobile .sidebar .tag-chip { font-size: 10px; padding: 4px 8px; }
+
+/* ---- main column ---- */
+html.cap-mobile .main { padding: 12px; min-width: 0; overflow-x: hidden; }
+html.cap-mobile .main h1 { font-size: 17px; }
+
+/* ---- game grid: fixed compact tracks (never stretch to monster) ---- */
+html.cap-mobile .game-grid {
+  grid-template-columns: repeat(auto-fill, minmax(96px, 132px)) !important;
+  gap: 10px;
+  justify-content: start;
+}
+html.cap-mobile body[data-layout="carousel"] .game-grid {
+  grid-template-columns: repeat(auto-fill, minmax(118px, 150px)) !important;
+  gap: 12px;
+}
+html.cap-mobile body[data-layout="wall"] .game-grid {
+  grid-template-columns: repeat(auto-fill, minmax(80px, 104px)) !important;
+  gap: 6px;
+}
+html.cap-mobile body[data-layout="list"] .game-grid { grid-template-columns: 1fr !important; }
+html.cap-mobile .game-card { border-radius: 11px; min-width: 0; }
+html.cap-mobile .game-card .cover .placeholder { font-size: 24px; }
+html.cap-mobile .game-card .info { padding: 7px 8px 9px; gap: 3px; }
+html.cap-mobile .game-card .title { font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.cap-mobile .game-card .subtitle { font-size: 9.5px; gap: 2px; }
+html.cap-mobile .game-card .subtitle .last-played { display: none; }
+html.cap-mobile .card-actions .act { width: 24px; height: 24px; font-size: 11px; }
+html.cap-mobile .fav-star { width: 26px; height: 26px; font-size: 13px; }
+html.cap-mobile .continue-card { min-width: 120px; }
+html.cap-mobile .catalog-game-card { min-width: 0; }
+html.cap-mobile .catalog-game-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---- home / hero ---- */
+html.cap-mobile .home-grid { grid-template-columns: 1fr !important; gap: 12px; }
+html.cap-mobile .hero-section { min-height: 150px; padding: 16px 14px; }
+html.cap-mobile .hero-title { font-size: 22px; }
+html.cap-mobile .hero-subtitle { font-size: 13px; }
+html.cap-mobile .hero-actions .hero-btn-play,
+html.cap-mobile .hero-actions .hero-btn-secondary { padding: 8px 14px; font-size: 11.5px; }
+html.cap-mobile .quick-launch-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+
+/* ---- floating music player: small + bottom-center, never overlaps ---- */
+html.cap-mobile #rich-music-player {
+  width: min(300px, 62vw) !important;
+  height: 70px !important;
+  bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+  inset-inline-start: auto !important;
+  inset-inline-end: auto !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  z-index: 60;
+}
+html.cap-mobile #rich-music-player.compact { width: min(240px, 52vw) !important; }
+
+/* ---- chibi assistant avatar: smaller corner presence ---- */
+html.cap-mobile .anime-companions {
+  bottom: 10px;
+  inset-inline-end: 10px;
+  transform: scale(.78);
+  transform-origin: 100% 100%;
+}
+
+/* ---- modals fit the phone ---- */
+html.cap-mobile .modal-overlay { padding: 10px; }
+html.cap-mobile .modal { max-width: min(96vw, 780px) !important; max-height: calc(100dvh - 20px); border-radius: 13px; }
+html.cap-mobile .modal.wide { max-width: 96vw !important; }
+html.cap-mobile .modal-header { padding: 12px 15px; }
+html.cap-mobile .modal-header h2 { font-size: 15px; }
+html.cap-mobile .modal-body { padding: 13px; }
+html.cap-mobile .modal-footer { padding: 10px 13px; gap: 8px; }
+
+/* ---- tabs: single scrollable row ---- */
+html.cap-mobile .tabs {
+  flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+html.cap-mobile .tabs::-webkit-scrollbar { display: none; }
+html.cap-mobile .tab { white-space: nowrap; font-size: 11.5px; padding: 6px 11px; flex-shrink: 0; }
+
+/* ---- add-game / download tab ---- */
+html.cap-mobile .download-tab { gap: 11px; }
+html.cap-mobile .input-group input, html.cap-mobile .input-group select { padding: 8px 12px; font-size: 13px; }
+html.cap-mobile .drop-zone { padding: 20px 12px; }
+html.cap-mobile .drop-zone .icon { font-size: 26px; }
+html.cap-mobile .crack-warning { font-size: 10.5px; padding: 9px 11px; }
+html.cap-mobile .catalogs-section { padding: 11px; margin-top: 6px; }
+html.cap-mobile .catalog-btn { padding: 10px 12px !important; font-size: 12px; }
+html.cap-mobile .rom-sites-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px; }
+html.cap-mobile .rom-site-link { padding: 8px 10px; font-size: 12px; }
+html.cap-mobile .download-status { font-size: 12px; }
+
+/* ---- catalog browser modal ---- */
+html.cap-mobile .catalog-games-grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+html.cap-mobile .catalog-game-title { font-size: 11px; }
+
+/* ---- floating panels that had desktop widths ---- */
+html.cap-mobile .ai-assistant { width: min(92vw, 320px); }
+html.cap-mobile .console-hardware { width: min(86vw, 300px); height: 150px; }
+html.cap-mobile .cd-disc { width: 190px; height: 190px; }
+html.cap-mobile .cartridge { width: 140px; height: 170px; }
+
+/* ---- player bar ---- */
+html.cap-mobile .player-bar { padding: 0 8px; gap: 6px; }
+html.cap-mobile .player-bar .game-info .title { font-size: 13px; }
+
+/* ---- empty state ---- */
+html.cap-mobile .empty-state .icon { font-size: 40px; }
+html.cap-mobile .empty-state h2 { font-size: 16px; }
+html.cap-mobile .empty-state p { font-size: 12px; }
+
+/* ---------- Update chip (floating) ---------- */
+#cap-update-chip {
+  position: fixed;
+  top: 14px;
+  inset-inline-start: 14px;
+  z-index: 99999;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(28, 22, 54, .96), rgba(46, 26, 64, .96));
+  border: 1px solid rgba(255, 217, 61, .55);
+  box-shadow: 0 6px 26px rgba(0, 0, 0, .5), 0 0 18px rgba(255, 217, 61, .18);
+  color: #ffe9a0;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: cap-chip-in .35s ease;
+}
+#cap-update-chip.show { display: flex; }
+#cap-update-chip .cap-uc-ico {
+  width: 22px; height: 22px; border-radius: 7px;
+  background: linear-gradient(135deg, #ffd93d, #ff9d3d);
+  display: flex; align-items: center; justify-content: center;
+  color: #1c1636; font-size: 13px; font-weight: 900; flex-shrink: 0;
+}
+@keyframes cap-chip-in {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Progress toast (APK / game downloads) ---------- */
+#cap-dl-toast {
+  position: fixed;
+  bottom: 18px;
+  inset-inline-start: 18px;
+  z-index: 99999;
+  display: none;
+  width: min(330px, 78vw);
+  padding: 12px 14px;
+  border-radius: 13px;
+  background: rgba(20, 16, 38, .96);
+  border: 1px solid rgba(155, 124, 255, .4);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, .55);
+  color: #efeaff;
+  font-size: 12px;
+  font-weight: 600;
+}
+#cap-dl-toast.show { display: block; }
+#cap-dl-toast .cap-dl-bar {
+  height: 7px; border-radius: 5px; margin-top: 9px;
+  background: rgba(255, 255, 255, .1); overflow: hidden;
+}
+#cap-dl-toast .cap-dl-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #9b7cff, #6ee7ff);
+  border-radius: 5px;
+  transition: width .25s ease;
+}
+
+/* ---------- Virtual gamepad (mobile touch, in-game only) ----------
+   v1.1.5: the viewport is native device width now, so every metric
+   below is a real dp size (56dp button ≈ 9.8mm — thumb friendly).
+   Layout (v1.1.4, kept): L/R shoulders sit ABOVE their clusters —
+   never on the in-game toolbar (#bar-toggle); SELECT/START/✕ live in
+   the free center column; ✕ on the pad itself; the floating 🎮 handle
+   only shows while the pad is OFF. */
+#cap-vpad {
+  position: fixed;
+  inset: 0;
+  z-index: 90000;
+  display: none;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+#cap-vpad.show { display: block; }
+#cap-vpad .vp-cluster {
+  position: absolute;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  pointer-events: auto;
+}
+#cap-vpad .vp-left  { left: 10px; }   /* physical sides — a gamepad never
+                                         mirrors with RTL text direction:
+                                         D-Pad left, face buttons right,
+                                         exactly like every real console pad */
+#cap-vpad .vp-right { right: 10px; }
+
+.vp-btn {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, rgba(255,255,255,.16), rgba(255,255,255,.05) 60%), rgba(16, 12, 34, .46);
+  border: 1.5px solid rgba(255, 255, 255, .22);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  touch-action: none;
+  box-shadow: 0 3px 12px rgba(0,0,0,.45);
+  pointer-events: auto;
+}
+.vp-btn:active, .vp-btn.pressed {
+  background: radial-gradient(circle at 34% 30%, rgba(255,255,255,.3), rgba(255,255,255,.1) 60%), rgba(90, 70, 180, .62);
+  border-color: rgba(255, 217, 61, .75);
+  transform: scale(.94);
+}
+.vp-btn.small { width: 48px; height: 48px; font-size: 11px; border-radius: 13px; }
+
+/* D-Pad cross layout */
+.vp-dpad {
+  position: relative;
+  width: 180px; height: 180px;
+  pointer-events: auto;
+}
+.vp-dpad .vp-btn {
+  position: absolute;
+  width: 60px; height: 60px;
+  border-radius: 15px;
+  font-size: 0;
+  background: radial-gradient(circle at 40% 34%, rgba(255,255,255,.14), rgba(255,255,255,.04) 62%), rgba(16, 12, 34, .48);
+}
+.vp-dpad .vp-up    { left: 60px; top: 0; border-radius: 18px 18px 7px 7px; }
+.vp-dpad .vp-down  { left: 60px; bottom: 0; border-radius: 7px 7px 18px 18px; }
+.vp-dpad .vp-left  { left: 0; top: 60px; border-radius: 18px 7px 7px 18px; }
+.vp-dpad .vp-right { right: 0; top: 60px; border-radius: 7px 18px 18px 7px; }
+.vp-dpad .vp-center {
+  position: absolute; left: 61px; top: 61px;
+  width: 58px; height: 58px; border-radius: 50%;
+  background: rgba(16,12,34,.4);
+  border: 1px solid rgba(255,255,255,.14);
+  pointer-events: none;
+}
+
+/* face buttons diamond */
+.vp-face {
+  position: relative;
+  width: 172px; height: 172px;
+  pointer-events: auto;
+}
+.vp-face .vp-btn { position: absolute; }
+.vp-face .vp-a { right: 0;     top: 56px;  background: radial-gradient(circle at 34% 30%, rgba(110,231,255,.25), rgba(110,231,255,.06) 60%), rgba(16,12,34,.48); }
+.vp-face .vp-b { right: 56px; bottom: 0;   background: radial-gradient(circle at 34% 30%, rgba(255,110,150,.25), rgba(255,110,150,.06) 60%), rgba(16,12,34,.48); }
+.vp-face .vp-x { right: 56px; top: 0;      background: radial-gradient(circle at 34% 30%, rgba(155,124,255,.25), rgba(155,124,255,.06) 60%), rgba(16,12,34,.48); }
+.vp-face .vp-y { right: 112px; top: 56px;  background: radial-gradient(circle at 34% 30%, rgba(255,217,61,.25), rgba(255,217,61,.06) 60%), rgba(16,12,34,.48); }
+
+/* start / select / close — vertical stack in the free center column
+   between the two clusters (never overlaps them or the EJS menu) */
+.vp-mid {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: auto;
+}
+.vp-mid .vp-close {
+  background: radial-gradient(circle at 34% 30%, rgba(255,110,110,.28), rgba(255,110,110,.07) 60%), rgba(16,12,34,.5);
+  color: #ffb3b3;
+}
+
+/* L / R shoulders — ABOVE their clusters (off the toolbar button) */
+.vp-shoulder {
+  position: absolute;
+  bottom: calc(198px + env(safe-area-inset-bottom));
+  pointer-events: auto;
+  display: flex;
+  gap: 8px;
+}
+.vp-shoulder.vp-ls { left: 10px; }
+.vp-shoulder.vp-rs { right: 10px; }
+.vp-shoulder .vp-btn { width: 74px; height: 38px; border-radius: 12px; font-size: 12.5px; }
+
+/* floating toggle handle — only shown while the pad is OFF */
+#cap-vpad-handle {
+  position: fixed;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  right: 12px;
+  z-index: 90001;
+  width: 46px; height: 46px;
+  border-radius: 13px;
+  background: rgba(20, 16, 38, .78);
+  border: 1.5px solid rgba(155, 124, 255, .5);
+  color: #cdbcff;
+  font-size: 19px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0,0,0,.5);
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+}
+#cap-vpad-handle:active { transform: scale(.93); }
+body.cap-vpad-on #cap-vpad-handle { display: none; }
+
+/* hide gamepad handle while NOT playing (still available in-game only) */
+body:not(.player-active) #cap-vpad-handle { display: none; }
+body:not(.player-active) #cap-vpad { display: none !important; }
+
+/* TV: gamepad overlay never shown */
+html.cap-tv #cap-vpad, html.cap-tv #cap-vpad-handle { display: none !important; }
